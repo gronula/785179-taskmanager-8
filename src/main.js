@@ -18,6 +18,24 @@ const CARD_COLORS = [
   `pink`
 ];
 
+const DAYS_OF_WEEK = [
+  `mo`,
+  `tu`,
+  `we`,
+  `th`,
+  `fr`,
+  `sa`,
+  `su`
+];
+
+const COLORS = [
+  `black`,
+  `yellow`,
+  `blue`,
+  `green`,
+  `pink`
+];
+
 const CARDS_NUMBER = 7;
 
 const filter = document.querySelector(`.filter`);
@@ -55,7 +73,53 @@ renderFilterElements();
 
 const boardTasks = document.querySelector(`.board__tasks`);
 
-const getTaskCard = (cardColor, isCardEdited, isCardRepeated, isCardDeadlined) => `
+const getCardRepeatDay = (orderNumber) => {
+  let cardRepeatDays = ``;
+  for (let i = 0; i < DAYS_OF_WEEK.length; i++) {
+    const randomChecked = getRandomInteger(0, 1);
+    cardRepeatDays += `
+    <input
+      class="visually-hidden card__repeat-day-input"
+      type="checkbox"
+      id="repeat-${DAYS_OF_WEEK[i]}-${orderNumber}"
+      name="repeat"
+      value="${DAYS_OF_WEEK[i]}"
+      ${randomChecked ? `checked` : ``}
+    />
+    <label
+      class="card__repeat-day"
+      for="repeat-${DAYS_OF_WEEK[i]}-${orderNumber}"
+    >
+      ${DAYS_OF_WEEK[i]}
+    </label>`;
+  }
+
+  return cardRepeatDays;
+};
+
+const getCardColor = (orderNumber) => {
+  let cardColors = ``;
+  for (let i = 0; i < COLORS.length; i++) {
+    const randomChecked = getRandomInteger(0, 1);
+    cardColors += `
+    <input
+      type="radio"
+      id="color-${COLORS[i]}-${orderNumber}"
+      class="card__color-input card__color-input--${COLORS[i]} visually-hidden"
+      name="color"
+      value="${COLORS[i]}"
+      ${randomChecked ? `checked` : ``}
+    />
+    <label
+      for="color-${COLORS[i]}-${orderNumber}"
+      class="card__color card__color--${COLORS[i]}"
+      >${COLORS[i]}</label
+    >`;
+  }
+  return cardColors;
+};
+
+const getTaskCard = (cardColor, isCardEdited, isCardRepeated, isCardDeadlined, orderNumber) => `
 <article class="card  card--${cardColor}  ${isCardEdited ? `card--edit` : ``}  ${isCardRepeated ? `card--repeat` : ``}  ${isCardDeadlined ? `card--deadline` : ``}">
   <form class="card__form" method="get">
     <div class="card__inner">
@@ -116,84 +180,12 @@ const getTaskCard = (cardColor, isCardEdited, isCardRepeated, isCardDeadlined) =
             </fieldset>
 
             <button class="card__repeat-toggle" type="button">
-              repeat:<span class="card__repeat-status">yes</span>
+              repeat:<span class="card__repeat-status">${isCardRepeated ? `yes` : `no`}</span>
             </button>
 
-            <fieldset class="card__repeat-days">
+            <fieldset class="card__repeat-days" ${isCardRepeated ? `` : `disabled`}>
               <div class="card__repeat-days-inner">
-                <input
-                  class="visually-hidden card__repeat-day-input"
-                  type="checkbox"
-                  id="repeat-mo-4"
-                  name="repeat"
-                  value="mo"
-                />
-                <label class="card__repeat-day" for="repeat-mo-4"
-                  >mo</label
-                >
-                <input
-                  class="visually-hidden card__repeat-day-input"
-                  type="checkbox"
-                  id="repeat-tu-4"
-                  name="repeat"
-                  value="tu"
-                  checked
-                />
-                <label class="card__repeat-day" for="repeat-tu-4"
-                  >tu</label
-                >
-                <input
-                  class="visually-hidden card__repeat-day-input"
-                  type="checkbox"
-                  id="repeat-we-4"
-                  name="repeat"
-                  value="we"
-                />
-                <label class="card__repeat-day" for="repeat-we-4"
-                  >we</label
-                >
-                <input
-                  class="visually-hidden card__repeat-day-input"
-                  type="checkbox"
-                  id="repeat-th-4"
-                  name="repeat"
-                  value="th"
-                />
-                <label class="card__repeat-day" for="repeat-th-4"
-                  >th</label
-                >
-                <input
-                  class="visually-hidden card__repeat-day-input"
-                  type="checkbox"
-                  id="repeat-fr-4"
-                  name="repeat"
-                  value="fr"
-                  checked
-                />
-                <label class="card__repeat-day" for="repeat-fr-4"
-                  >fr</label
-                >
-                <input
-                  class="visually-hidden card__repeat-day-input"
-                  type="checkbox"
-                  name="repeat"
-                  value="sa"
-                  id="repeat-sa-4"
-                />
-                <label class="card__repeat-day" for="repeat-sa-4"
-                  >sa</label
-                >
-                <input
-                  class="visually-hidden card__repeat-day-input"
-                  type="checkbox"
-                  id="repeat-su-4"
-                  name="repeat"
-                  value="su"
-                  checked
-                />
-                <label class="card__repeat-day" for="repeat-su-4"
-                  >su</label
-                >
+                ${getCardRepeatDay(orderNumber)}
               </div>
             </fieldset>
           </div>
@@ -273,67 +265,7 @@ const getTaskCard = (cardColor, isCardEdited, isCardRepeated, isCardDeadlined) =
         <div class="card__colors-inner">
           <h3 class="card__colors-title">Color</h3>
           <div class="card__colors-wrap">
-            <input
-              type="radio"
-              id="color-black-4"
-              class="card__color-input card__color-input--black visually-hidden"
-              name="color"
-              value="black"
-            />
-            <label
-              for="color-black-4"
-              class="card__color card__color--black"
-              >black</label
-            >
-            <input
-              type="radio"
-              id="color-yellow-4"
-              class="card__color-input card__color-input--yellow visually-hidden"
-              name="color"
-              value="yellow"
-              checked
-            />
-            <label
-              for="color-yellow-4"
-              class="card__color card__color--yellow"
-              >yellow</label
-            >
-            <input
-              type="radio"
-              id="color-blue-4"
-              class="card__color-input card__color-input--blue visually-hidden"
-              name="color"
-              value="blue"
-            />
-            <label
-              for="color-blue-4"
-              class="card__color card__color--blue"
-              >blue</label
-            >
-            <input
-              type="radio"
-              id="color-green-4"
-              class="card__color-input card__color-input--green visually-hidden"
-              name="color"
-              value="green"
-            />
-            <label
-              for="color-green-4"
-              class="card__color card__color--green"
-              >green</label
-            >
-            <input
-              type="radio"
-              id="color-pink-4"
-              class="card__color-input card__color-input--pink visually-hidden"
-              name="color"
-              value="pink"
-            />
-            <label
-              for="color-pink-4"
-              class="card__color card__color--pink"
-              >pink</label
-            >
+            ${getCardColor(orderNumber)}
           </div>
         </div>
       </div>
@@ -354,7 +286,7 @@ const renderTaskCards = (cardsNumber) => {
     const randomEdited = getRandomInteger(0, 1);
     const randomRepeated = getRandomInteger(0, 1);
     const randomDeadlined = getRandomInteger(0, 1);
-    const boardTasksCard = getTaskCard(cardColor, randomEdited, randomRepeated, randomDeadlined);
+    const boardTasksCard = getTaskCard(cardColor, randomEdited, randomRepeated, randomDeadlined, i + 1);
     boardTasks.innerHTML += boardTasksCard;
   }
 };

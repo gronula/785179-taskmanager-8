@@ -1,5 +1,3 @@
-'use strict';
-
 const FILTER_ELEMENT_NAMES = [
   `ALL`,
   `OVERDUE`,

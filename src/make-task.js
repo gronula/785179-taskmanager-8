@@ -1,11 +1,3 @@
-const CARD_COLORS = [
-  `black`,
-  `yellow`,
-  `blue`,
-  `green`,
-  `pink`
-];
-
 const DAYS_OF_WEEK = [
   `mo`,
   `tu`,
@@ -16,13 +8,15 @@ const DAYS_OF_WEEK = [
   `su`
 ];
 
-const getRandomInteger = (min, max) => Math.floor(min + Math.random() * (max + 1 - min));
-const getRandomElement = (array) => array[Math.floor(Math.random() * array.length)];
+const CARD_COLORS = [
+  `black`,
+  `yellow`,
+  `blue`,
+  `green`,
+  `pink`
+];
 
-const randomColor = getRandomElement(CARD_COLORS);
-const randomEdited = getRandomInteger(0, 1);
-const randomRepeated = getRandomInteger(0, 1);
-const randomDeadlined = getRandomInteger(0, 1);
+const getRandomInteger = (min, max) => Math.floor(min + Math.random() * (max + 1 - min));
 
 const getCardRepeatDay = (orderNumber) => {
   let cardRepeatDays = ``;
@@ -70,7 +64,7 @@ const getCardColor = (orderNumber) => {
   return cardColors;
 };
 
-export default (orderNumber) => `
+export default (orderNumber, randomColor, randomEdited, randomRepeated, randomDeadlined) => `
 <article class="card  card--${randomColor}  ${randomEdited ? `card--edit` : ``}  ${randomRepeated ? `card--repeat` : ``}  ${randomDeadlined ? `card--deadline` : ``}">
   <form class="card__form" method="get">
     <div class="card__inner">

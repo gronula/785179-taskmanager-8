@@ -1,5 +1,6 @@
-import getFilterElement from './make-filter';
-import getTaskCard from './make-task';
+import getFilterElementMarkup from './make-filter';
+import getTaskCardMarkup from './make-task';
+import getTaskCardData from './task-data';
 
 const FILTER_ELEMENT_NAMES = [
   `ALL`,
@@ -11,56 +12,50 @@ const FILTER_ELEMENT_NAMES = [
   `ARCHIVE`
 ];
 
-const CARD_COLORS = [
-  `black`,
-  `yellow`,
-  `blue`,
-  `green`,
-  `pink`
-];
-
 const CARDS_NUMBER = 7;
 
 const filter = document.querySelector(`.filter`);
 const boardTasks = document.querySelector(`.board__tasks`);
 
 const getRandomInteger = (min, max) => Math.floor(min + Math.random() * (max + 1 - min));
-const getRandomElement = (array) => array[Math.floor(Math.random() * array.length)];
 
 const renderFilterElements = () => {
   for (let i = 0; i < FILTER_ELEMENT_NAMES.length; i++) {
-    const filterName = FILTER_ELEMENT_NAMES[i];
-    const randomAmount = getRandomInteger(0, 100);
-    const randomChecked = getRandomInteger(0, 1);
-    const randomDisabled = getRandomInteger(0, 1);
+    const parameters = {};
+    parameters.name = FILTER_ELEMENT_NAMES[i];
+    parameters.randomAmount = getRandomInteger(0, 100);
+    parameters.randomChecked = getRandomInteger(0, 1);
+    parameters.randomDisabled = getRandomInteger(0, 1);
 
-    filter.innerHTML += getFilterElement(filterName, randomAmount, randomChecked, randomDisabled);
+    filter.innerHTML += getFilterElementMarkup(parameters);
   }
 };
 
-const renderTaskCards = () => {
-  for (let i = 0; i < CARDS_NUMBER; i++) {
-    const orderNumber = i + 1;
-    const randomColor = getRandomElement(CARD_COLORS);
-    const randomEdited = getRandomInteger(0, 1);
-    const randomRepeated = getRandomInteger(0, 1);
-    const randomDeadlined = getRandomInteger(0, 1);
+const renderTaskCards = (cardsNumber) => {
+  const taskCards = [];
 
-    boardTasks.innerHTML += getTaskCard(orderNumber, randomColor, randomEdited, randomRepeated, randomDeadlined);
+  for (let i = 0; i < cardsNumber; i++) {
+    const data = getTaskCardData();
+    data.orderNumber = i;
+    data.isEdited = i > 3 ? 1 : 0;
+    data.isRepeated = getRandomInteger(0, 1);
+    taskCards.push(data);
+
+    boardTasks.innerHTML += getTaskCardMarkup(data);
   }
 };
 
 renderFilterElements();
-renderTaskCards();
+renderTaskCards(CARDS_NUMBER);
 
 const filterLabels = filter.querySelectorAll(`.filter__label`);
 
 const filterLabelClickHandler = () => {
   boardTasks.innerHTML = ``;
 
-  const randomCardsNamber = getRandomInteger(1, 7);
+  const randomCardsNumber = getRandomInteger(1, 7);
 
-  renderTaskCards(randomCardsNamber);
+  renderTaskCards(randomCardsNumber);
 };
 
 filterLabels.forEach((it) => it.addEventListener(`click`, filterLabelClickHandler));

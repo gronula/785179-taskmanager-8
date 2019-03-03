@@ -1,15 +1,15 @@
-export default (name, randomAmount, randomChecked, randomDisabled) => `
+export default (parameters) => `
 <input
   type="radio"
-  id="filter__${name.toLowerCase()}"
+  id="filter__${parameters.name.toLowerCase()}"
   class="filter__input visually-hidden"
   name="filter"
-  ${randomChecked ? `checked` : ``}
-  ${randomDisabled ? `disabled` : ``}
+  ${parameters.randomChecked ? `checked` : ``}
+  ${parameters.randomDisabled ? `disabled` : ``}
 />
 <label
-  for="filter__${name.toLowerCase()}"
+  for="filter__${parameters.name.toLowerCase()}"
   class="filter__label"
 >
-  ${name} <span class="filter__${name.toLowerCase()}-count">${randomAmount}</span>
+  ${parameters.name} <span class="filter__${parameters.name.toLowerCase()}-count">${parameters.randomAmount}</span>
 </label>`;

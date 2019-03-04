@@ -1,4 +1,4 @@
-export default (name, randomAmount, randomChecked, randomDisabled) => `
+export default ({name, randomChecked, randomDisabled, randomAmount}) => `
 <input
   type="radio"
   id="filter__${name.toLowerCase()}"

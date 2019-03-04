@@ -21,8 +21,6 @@ const COLORS = [
   `pink`
 ];
 
-const getRandomBoolean = () => Math.floor(Math.random() * 2) === 1 ? true : false;
-
 const getDate = (timestamp, time = false, date = false) => {
   const day = new Date();
   day.setTime(timestamp);

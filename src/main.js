@@ -18,31 +18,39 @@ const filter = document.querySelector(`.filter`);
 const boardTasks = document.querySelector(`.board__tasks`);
 
 const getRandomInteger = (min, max) => Math.floor(min + Math.random() * (max + 1 - min));
+const getRandomBoolean = () => Math.floor(Math.random() * 2) === 1 ? true : false;
 
 const renderFilterElements = () => {
+  let markup = ``;
+
   for (let i = 0; i < FILTER_ELEMENT_NAMES.length; i++) {
     const parameters = {};
     parameters.name = FILTER_ELEMENT_NAMES[i];
     parameters.randomAmount = getRandomInteger(0, 100);
-    parameters.randomChecked = getRandomInteger(0, 1);
-    parameters.randomDisabled = getRandomInteger(0, 1);
+    parameters.randomChecked = getRandomBoolean();
+    parameters.randomDisabled = getRandomBoolean();
 
-    filter.innerHTML += getFilterElementMarkup(parameters);
+    markup += getFilterElementMarkup(parameters);
   }
+
+  filter.innerHTML = markup;
 };
 
 const renderTaskCards = (cardsNumber) => {
   const taskCards = [];
+  let markup = ``;
 
   for (let i = 0; i < cardsNumber; i++) {
     const data = getTaskCardData();
     data.orderNumber = i;
     data.isEdited = i > 3 ? 1 : 0;
-    data.isRepeated = getRandomInteger(0, 1);
+    data.isRepeated = getRandomBoolean();
     taskCards.push(data);
 
-    boardTasks.innerHTML += getTaskCardMarkup(data);
+    markup += getTaskCardMarkup(data);
   }
+
+  boardTasks.innerHTML = markup;
 };
 
 renderFilterElements();

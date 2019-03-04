@@ -21,7 +21,7 @@ const COLORS = [
   `pink`
 ];
 
-const getRandomInteger = (min, max) => Math.floor(min + Math.random() * (max + 1 - min));
+const getRandomBoolean = () => Math.floor(Math.random() * 2) === 1 ? true : false;
 
 const getDate = (timestamp, time = false, date = false) => {
   const day = new Date();
@@ -61,19 +61,18 @@ const getHashtagsMarkup = (hashtags) => {
 };
 
 const getCardRepeatingDaysMarkup = (days, orderNumber) => {
-  let cardRepeatDays = ``;
+  let markup = ``;
 
   for (const day in days) {
     if (days.hasOwnProperty(day)) {
-      const randomChecked = getRandomInteger(0, 1);
-      cardRepeatDays += `
+      markup += `
       <input
         class="visually-hidden card__repeat-day-input"
         type="checkbox"
         id="repeat-${day}-${orderNumber}"
         name="repeat"
         value="${day}"
-        ${randomChecked ? `checked` : ``}
+        ${days[day] ? `checked` : ``}
       />
       <label
         class="card__repeat-day"
@@ -84,21 +83,21 @@ const getCardRepeatingDaysMarkup = (days, orderNumber) => {
     }
   }
 
-  return cardRepeatDays;
+  return markup;
 };
 
-const getCardColorsMarkup = (orderNumber) => {
-  let cardColors = ``;
+const getCardColorsMarkup = (color, orderNumber) => {
+  let markup = ``;
+
   for (let i = 0; i < COLORS.length; i++) {
-    const randomChecked = getRandomInteger(0, 1);
-    cardColors += `
+    markup += `
     <input
       type="radio"
       id="color-${COLORS[i]}-${orderNumber}"
       class="card__color-input card__color-input--${COLORS[i]} visually-hidden"
       name="color"
       value="${COLORS[i]}"
-      ${randomChecked ? `checked` : ``}
+      ${COLORS[i] === color ? `checked` : ``}
     />
     <label
       for="color-${COLORS[i]}-${orderNumber}"
@@ -106,11 +105,12 @@ const getCardColorsMarkup = (orderNumber) => {
       >${COLORS[i]}</label
     >`;
   }
-  return cardColors;
+
+  return markup;
 };
 
-export default (data) => `
-<article class="card  card--${data.color} ${data.isEdited ? `card--edit` : ``} ${data.isRepeated ? `card--repeat` : ``} ${data.isDone ? `` : `card--deadline`}">
+export default ({title, dueDate, tags, picture, color, repeatingDays, isFavorite, isDone, orderNumber, isEdited, isRepeated}) => `
+<article class="card  card--${color} ${isEdited ? `card--edit` : ``} ${isRepeated ? `card--repeat` : ``} ${isDone ? `` : `card--deadline`}">
   <form class="card__form" method="get">
     <div class="card__inner">
       <div class="card__control">
@@ -120,7 +120,7 @@ export default (data) => `
         <button type="button" class="card__btn card__btn--archive">
           archive
         </button>
-        <button type="button" class="card__btn card__btn--favorites ${data.isFavorite ? `` : `card__btn--disabled`}">
+        <button type="button" class="card__btn card__btn--favorites ${isFavorite ? `` : `card__btn--disabled`}">
           favorites
         </button>
       </div>
@@ -137,7 +137,7 @@ export default (data) => `
             class="card__text"
             placeholder="Start typing your text here..."
             name="text"
-          >${data.title}</textarea>
+          >${title}</textarea>
         </label>
       </div>
 
@@ -153,36 +153,36 @@ export default (data) => `
                 <input
                   class="card__date"
                   type="text"
-                  placeholder="${getDate(data.dueDate, false, true)}"
+                  placeholder="${getDate(dueDate, false, true)}"
                   name="date"
-                  value="${getDate(data.dueDate, false, true)}"
+                  value="${getDate(dueDate, false, true)}"
                 />
               </label>
               <label class="card__input-deadline-wrap">
                 <input
                   class="card__time"
                   type="text"
-                  placeholder="${getDate(data.dueDate, true, false)}"
+                  placeholder="${getDate(dueDate, true, false)}"
                   name="time"
-                  value="${getDate(data.dueDate, true, false)}"
+                  value="${getDate(dueDate, true, false)}"
                 />
               </label>
             </fieldset>
 
             <button class="card__repeat-toggle" type="button">
-              repeat:<span class="card__repeat-status">${data.isRepeated ? `yes` : `no`}</span>
+              repeat:<span class="card__repeat-status">${isRepeated ? `yes` : `no`}</span>
             </button>
 
-            <fieldset class="card__repeat-days" ${data.isRepeated ? `` : `disabled`}>
+            <fieldset class="card__repeat-days" ${isRepeated ? `` : `disabled`}>
               <div class="card__repeat-days-inner">
-                ${getCardRepeatingDaysMarkup(data.repeatingDays, data.orderNumber)}
+                ${getCardRepeatingDaysMarkup(repeatingDays, orderNumber)}
               </div>
             </fieldset>
           </div>
 
           <div class="card__hashtag">
             <div class="card__hashtag-list">
-              ${getHashtagsMarkup(data.tags)}
+              ${getHashtagsMarkup(tags)}
             </div>
 
             <label>
@@ -203,7 +203,7 @@ export default (data) => `
             name="img"
           />
           <img
-            src="${data.picture}"
+            src="${picture}"
             alt="task picture"
             class="card__img"
           />
@@ -212,7 +212,7 @@ export default (data) => `
         <div class="card__colors-inner">
           <h3 class="card__colors-title">Color</h3>
           <div class="card__colors-wrap">
-            ${getCardColorsMarkup(data.orderNumber)}
+            ${getCardColorsMarkup(color, orderNumber)}
           </div>
         </div>
       </div>

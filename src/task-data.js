@@ -24,6 +24,7 @@ const Data = {
 };
 
 const getRandomInteger = (min, max) => Math.floor(min + Math.random() * (max + 1 - min));
+const getRandomBoolean = () => Math.floor(Math.random() * 2) === 1 ? true : false;
 const getRandomElement = (array) => array[Math.floor(Math.random() * array.length)];
 
 const getRandomArray = (array) => {
@@ -47,14 +48,14 @@ export default () => ({
   picture: `http://picsum.photos/100/100?r=${Math.random()}`,
   color: getRandomElement(Data.COLOR),
   repeatingDays: {
-    [`Mo`]: getRandomInteger(0, 1),
-    [`Tu`]: getRandomInteger(0, 1),
-    [`We`]: getRandomInteger(0, 1),
-    [`Th`]: getRandomInteger(0, 1),
-    [`Fr`]: getRandomInteger(0, 1),
-    [`Sa`]: getRandomInteger(0, 1),
-    [`Su`]: getRandomInteger(0, 1)
+    [`Mo`]: getRandomBoolean(),
+    [`Tu`]: getRandomBoolean(),
+    [`We`]: getRandomBoolean(),
+    [`Th`]: getRandomBoolean(),
+    [`Fr`]: getRandomBoolean(),
+    [`Sa`]: getRandomBoolean(),
+    [`Su`]: getRandomBoolean()
   },
-  isFavorite: getRandomInteger(0, 1),
-  isDone: getRandomInteger(0, 1)
+  isFavorite: getRandomBoolean(),
+  isDone: getRandomBoolean()
 });

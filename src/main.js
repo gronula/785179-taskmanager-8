@@ -1,6 +1,7 @@
 import getFilterElementMarkup from './make-filter';
-import getTaskCardMarkup from './make-task';
 import getTaskCardData from './task-data';
+import Task from './task';
+import TaskEdit from './task-edit';
 
 const FILTER_ELEMENT_NAMES = [
   `ALL`,
@@ -37,20 +38,38 @@ const renderFilterElements = () => {
 };
 
 const renderTaskCards = (cardsNumber) => {
-  const taskCards = [];
-  let markup = ``;
+  const fragment = document.createDocumentFragment();
 
   for (let i = 0; i < cardsNumber; i++) {
     const data = getTaskCardData();
-    data.orderNumber = i;
-    data.isEdited = i > 3 ? 1 : 0;
-    data.isRepeated = getRandomBoolean();
-    taskCards.push(data);
 
-    markup += getTaskCardMarkup(data);
+    const taskComponent = new Task(data);
+    const editTaskComponent = new TaskEdit(data);
+
+    const card = taskComponent.render();
+
+    taskComponent.onEdit = () => {
+      editTaskComponent.render(i + 1);
+      boardTasks.replaceChild(editTaskComponent.element, taskComponent.element);
+      taskComponent.unrender();
+    };
+
+    editTaskComponent.onEdit = () => {
+      taskComponent.render();
+      boardTasks.replaceChild(taskComponent.element, editTaskComponent.element);
+      editTaskComponent.unrender();
+    };
+
+    editTaskComponent.onSubmit = () => {
+      taskComponent.render();
+      boardTasks.replaceChild(taskComponent.element, editTaskComponent.element);
+      editTaskComponent.unrender();
+    };
+
+    fragment.appendChild(card);
   }
 
-  boardTasks.innerHTML = markup;
+  boardTasks.appendChild(fragment);
 };
 
 renderFilterElements();

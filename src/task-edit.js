@@ -1,19 +1,4 @@
-import createElement from './create-element';
-
-const MONTHS = [
-  `January`,
-  `February`,
-  `March`,
-  `April`,
-  `May`,
-  `June`,
-  `July`,
-  `August`,
-  `September`,
-  `October`,
-  `November`,
-  `December`
-];
+import Component from './component';
 
 const COLORS = [
   `black`,
@@ -23,8 +8,9 @@ const COLORS = [
   `pink`
 ];
 
-export default class TaskEdit {
-  constructor({title, dueDate, tags, picture, color, repeatingDays}) {
+export default class TaskEdit extends Component {
+  constructor({orderNumber, title, dueDate, tags, picture, color, repeatingDays}) {
+    super();
     this._title = title;
     this._dueDate = dueDate;
     this._tags = tags;
@@ -32,6 +18,7 @@ export default class TaskEdit {
     this._color = color;
     this._repeatingDays = repeatingDays;
     this._isRepeated = Object.values(this._repeatingDays).some((it) => it === true);
+    this._orderNumber = orderNumber;
 
     this._element = null;
     this._state = {
@@ -41,95 +28,21 @@ export default class TaskEdit {
 
     this._onEdit = null;
     this._onSubmit = null;
+
+    this._editButtonClickHandler = this._editButtonClickHandler.bind(this);
+    this._submitButtonClickHandler = this._submitButtonClickHandler.bind(this);
   }
 
-  _getDate(timestamp, time = false, date = false) {
-    const day = new Date();
-    day.setTime(timestamp);
-
-    const hours = time ? (`0${day.getHours()}:`).slice(-3) : ``;
-    const minutes = time ? (`0${day.getMinutes()}`).slice(-2) : ``;
-
-    const days = date ? `${day.getDate()} ` : ``;
-    const month = date ? MONTHS[day.getMonth()] : ``;
-
-    return hours + minutes + days + month;
+  _editButtonClickHandler() {
+    return typeof this._onEdit === `function` && this._onEdit();
   }
 
-  _getHashtagsMarkup(hashtags) {
-    let markup = ``;
-
-    for (const tag of hashtags) {
-      markup += `
-      <span class="card__hashtag-inner">
-        <input
-          type="hidden"
-          name="hashtag"
-          value="repeat"
-          class="card__hashtag-hidden-input"
-        />
-        <button type="button" class="card__hashtag-name">
-          #${tag}
-        </button>
-        <button type="button" class="card__hashtag-delete">
-          delete
-        </button>
-      </span>`;
-    }
-
-    return markup;
+  _submitButtonClickHandler(evt) {
+    evt.preventDefault();
+    return typeof this._onSubmit === `function` && this._onSubmit();
   }
 
-  _getCardRepeatingDaysMarkup(days, orderNumber) {
-    let markup = ``;
-
-    for (const day in days) {
-      if (days.hasOwnProperty(day)) {
-        markup += `
-        <input
-          class="visually-hidden card__repeat-day-input"
-          type="checkbox"
-          id="repeat-${day}-${orderNumber}"
-          name="repeat"
-          value="${day}"
-          ${days[day] ? `checked` : ``}
-        />
-        <label
-          class="card__repeat-day"
-          for="repeat-${day}-${orderNumber}"
-        >
-          ${day}
-        </label>`;
-      }
-    }
-
-    return markup;
-  }
-
-  _getCardColorsMarkup(color, orderNumber) {
-    let markup = ``;
-
-    for (let i = 0; i < COLORS.length; i++) {
-      markup += `
-      <input
-        type="radio"
-        id="color-${COLORS[i]}-${orderNumber}"
-        class="card__color-input card__color-input--${COLORS[i]} visually-hidden"
-        name="color"
-        value="${COLORS[i]}"
-        ${COLORS[i] === color ? `checked` : ``}
-      />
-      <label
-        for="color-${COLORS[i]}-${orderNumber}"
-        class="card__color card__color--${COLORS[i]}"
-        >${COLORS[i]}</label
-      >`;
-    }
-
-    return markup;
-  }
-
-  _getTemplate(orderNumber) {
+  get template() {
     return `
     <article class="card card--edit card--${this._color} ${this._isRepeated ? `card--repeat` : ``}">
       <form class="card__form" method="get">
@@ -174,18 +87,18 @@ export default class TaskEdit {
                     <input
                       class="card__date"
                       type="text"
-                      placeholder="${this._getDate(this._dueDate, false, true)}"
+                      placeholder="${this.getDate(this._dueDate, false, true)}"
                       name="date"
-                      value="${this._getDate(this._dueDate, false, true)}"
+                      value="${this.getDate(this._dueDate, false, true)}"
                     />
                   </label>
                   <label class="card__input-deadline-wrap">
                     <input
                       class="card__time"
                       type="text"
-                      placeholder="${this._getDate(this._dueDate, true, false)}"
+                      placeholder="${this.getDate(this._dueDate, true, false)}"
                       name="time"
-                      value="${this._getDate(this._dueDate, true, false)}"
+                      value="${this.getDate(this._dueDate, true, false)}"
                     />
                   </label>
                 </fieldset>
@@ -196,14 +109,33 @@ export default class TaskEdit {
 
                 <fieldset class="card__repeat-days" ${this._isRepeated ? `` : `disabled`}>
                   <div class="card__repeat-days-inner">
-                    ${this._getCardRepeatingDaysMarkup(this._repeatingDays, orderNumber)}
+                    ${(Object.keys(this._repeatingDays).map((day) => (`
+                      <input
+                        class="visually-hidden card__repeat-day-input"
+                        type="checkbox"
+                        id="repeat-${day}-${this._orderNumber}"
+                        name="repeat"
+                        value="${day}"
+                        ${this._repeatingDays[day] ? `checked` : ``}
+                      />
+                      <label
+                        class="card__repeat-day"
+                        for="repeat-${day}-${this._orderNumber}"
+                      >
+                        ${day}
+                      </label>`))).join(``)}
                   </div>
                 </fieldset>
               </div>
 
               <div class="card__hashtag">
                 <div class="card__hashtag-list">
-                  ${this._getHashtagsMarkup(this._tags)}
+                  ${(Array.from(this._tags).map((tag) => (`
+                    <span class="card__hashtag-inner">
+                      <input type="hidden" name="hashtag" value="${tag}" class="card__hashtag-hidden-input" />
+                      <button type="button" class="card__hashtag-name">#${tag}</button>
+                      <button type="button" class="card__hashtag-delete">delete</button>
+                    </span>`))).join(``)}
                 </div>
 
                 <label>
@@ -233,7 +165,20 @@ export default class TaskEdit {
             <div class="card__colors-inner">
               <h3 class="card__colors-title">Color</h3>
               <div class="card__colors-wrap">
-                ${this._getCardColorsMarkup(this._color, orderNumber)}
+                ${(COLORS.map((color) => (`
+                  <input
+                    type="radio"
+                    id="color-${color}-${this._orderNumber}"
+                    class="card__color-input card__color-input--${color} visually-hidden"
+                    name="color"
+                    value="${color}"
+                    ${color === this._color ? `checked` : ``}
+                  />
+                  <label
+                    for="color-${color}-${this._orderNumber}"
+                    class="card__color card__color--${color}"
+                    >${color}</label
+                  >`))).join(``)}
               </div>
             </div>
           </div>
@@ -247,19 +192,6 @@ export default class TaskEdit {
     </article>`;
   }
 
-  _editButtonClickHandler() {
-    return typeof this._onEdit === `function` && this._onEdit();
-  }
-
-  _submitButtonClickHandler(evt) {
-    evt.preventDefault();
-    return typeof this._onSubmit === `function` && this._onSubmit();
-  }
-
-  get element() {
-    return this._element;
-  }
-
   set onEdit(fn) {
     this._onEdit = fn;
   }
@@ -268,34 +200,19 @@ export default class TaskEdit {
     this._onSubmit = fn;
   }
 
-  bind(element, event, fn) {
-    element.addEventListener(event, fn.bind(this));
-  }
-
-  unbind(element, event, fn) {
-    element.removeEventListener(event, fn.bind(this));
-  }
-
-  render(orderNumber) {
-    const markup = this._getTemplate(orderNumber);
-    this._element = createElement(markup);
-
+  createListeners() {
     const editButton = this._element.querySelector(`.card__btn--edit`);
     const form = this._element.querySelector(`.card__form`);
 
-    this.bind(editButton, `click`, this._editButtonClickHandler);
-    this.bind(form, `submit`, this._submitButtonClickHandler);
-
-    return this._element;
+    editButton.addEventListener(`click`, this._editButtonClickHandler);
+    form.addEventListener(`submit`, this._submitButtonClickHandler);
   }
 
-  unrender() {
+  removeListeners() {
     const editButton = this._element.querySelector(`.card__btn--edit`);
     const form = this._element.querySelector(`.card__form`);
 
-    this.unbind(editButton, `click`, this._editButtonClickHandler);
-    this.unbind(form, `submit`, this._submitButtonClickHandler);
-
-    this._element = null;
+    editButton.removeEventListener(`click`, this._editButtonClickHandler);
+    form.removeEventListener(`submit`, this._submitButtonClickHandler);
   }
 }

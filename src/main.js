@@ -41,7 +41,8 @@ const renderTaskCards = (cardsNumber) => {
   const fragment = document.createDocumentFragment();
 
   for (let i = 0; i < cardsNumber; i++) {
-    const data = getTaskCardData();
+    const orderNumber = i + 1;
+    const data = getTaskCardData(orderNumber);
 
     const taskComponent = new Task(data);
     const editTaskComponent = new TaskEdit(data);
@@ -49,7 +50,7 @@ const renderTaskCards = (cardsNumber) => {
     const card = taskComponent.render();
 
     taskComponent.onEdit = () => {
-      editTaskComponent.render(i + 1);
+      editTaskComponent.render();
       boardTasks.replaceChild(editTaskComponent.element, taskComponent.element);
       taskComponent.unrender();
     };

@@ -41,7 +41,8 @@ const getRandomArray = (array) => {
   return newArray;
 };
 
-export default () => ({
+export default (orderNumber) => ({
+  orderNumber,
   title: getRandomElement(Data.TITLE),
   dueDate: Date.now() + getRandomInteger(-7, 7) * getRandomInteger(1, 24) * getRandomInteger(1, 60) * 60 * 1000,
   tags: new Set(getRandomArray(Data.TAG)),
@@ -57,5 +58,5 @@ export default () => ({
     [`Su`]: getRandomBoolean()
   },
   isFavorite: getRandomBoolean(),
-  isDone: getRandomBoolean()
+  isDone: getRandomBoolean(),
 });

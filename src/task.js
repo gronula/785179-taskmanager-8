@@ -1,4 +1,5 @@
 import Component from './component';
+import moment from 'moment';
 
 export default class Task extends Component {
   constructor({orderNumber, title, dueDate, tags, picture, color, repeatingDays}) {
@@ -14,6 +15,7 @@ export default class Task extends Component {
 
     this._element = null;
     this._state = {
+      isRepeated: Object.values(this._repeatingDays).some((it) => it === true),
       isFavorite: false,
       isDone: false
     };
@@ -28,7 +30,7 @@ export default class Task extends Component {
 
   get template() {
     return `
-    <article class="card  card--${this._color} ${this._isRepeated ? `card--repeat` : ``}">
+    <article class="card  card--${this._color} ${this._state.isRepeated ? `card--repeat` : ``}">
       <form class="card__form" method="get">
         <div class="card__inner">
           <div class="card__control">
@@ -67,18 +69,18 @@ export default class Task extends Component {
                     <input
                       class="card__date"
                       type="text"
-                      placeholder="${this.getDate(this._dueDate, false, true)}"
+                      placeholder="${moment(this._dueDate, `x`).format(`D MMMM`)}"
                       name="date"
-                      value="${this.getDate(this._dueDate, false, true)}"
+                      value="${moment(this._dueDate, `x`).format(`D MMMM`)}"
                     />
                   </label>
                   <label class="card__input-deadline-wrap">
                     <input
                       class="card__time"
                       type="text"
-                      placeholder="${this.getDate(this._dueDate, true, false)}"
+                      placeholder="${moment(this._dueDate, `x`).format(`hh:mm A`)}"
                       name="time"
-                      value="${this.getDate(this._dueDate, true, false)}"
+                      value="${moment(this._dueDate, `x`).format(`hh:mm A`)}"
                     />
                   </label>
                 </fieldset>
@@ -135,5 +137,13 @@ export default class Task extends Component {
   removeListeners() {
     const editButton = this._element.querySelector(`.card__btn--edit`);
     editButton.removeEventListener(`click`, this._editButtonClickHandler);
+  }
+
+  update(data) {
+    this._title = data.title;
+    this._tags = data.tags;
+    this._color = data.color;
+    this._repeatingDays = data.repeatingDays;
+    this._dueDate = data.dueDate;
   }
 }

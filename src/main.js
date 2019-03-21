@@ -55,17 +55,21 @@ const renderTaskCards = (cardsNumber) => {
       taskComponent.unrender();
     };
 
-    editTaskComponent.onEdit = () => {
+    const updateComponent = (newObject) => {
+      data.title = newObject.title;
+      data.tags = newObject.tags;
+      data.color = newObject.color;
+      data.repeatingDays = newObject.repeatingDays;
+      data.dueDate = newObject.dueDate;
+
+      taskComponent.update(data);
       taskComponent.render();
       boardTasks.replaceChild(taskComponent.element, editTaskComponent.element);
       editTaskComponent.unrender();
     };
 
-    editTaskComponent.onSubmit = () => {
-      taskComponent.render();
-      boardTasks.replaceChild(taskComponent.element, editTaskComponent.element);
-      editTaskComponent.unrender();
-    };
+    editTaskComponent.onEdit = updateComponent;
+    editTaskComponent.onSubmit = updateComponent;
 
     fragment.appendChild(card);
   }

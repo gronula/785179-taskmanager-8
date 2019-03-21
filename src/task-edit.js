@@ -11,6 +11,9 @@ const COLORS = [
   `pink`
 ];
 
+let date;
+let time;
+
 export default class TaskEdit extends Component {
   constructor({orderNumber, title, dueDate, tags, picture, color, repeatingDays}) {
     super();
@@ -294,7 +297,8 @@ export default class TaskEdit extends Component {
     form.addEventListener(`submit`, this._submitButtonClickHandler);
 
     if (this._state.isDate) {
-      flatpickr(`.card__date`, {
+      // почему при нажатии на кнопку DATE: NO во всех карточках меняется время?
+      date = flatpickr(`.card__date`, {
         altInput: true,
         altFormat: `j F`,
         dateFormat: `j F`,
@@ -304,7 +308,7 @@ export default class TaskEdit extends Component {
         },
       });
 
-      flatpickr(`.card__time`, {
+      time = flatpickr(`.card__time`, {
         enableTime: true,
         noCalendar: true,
         altInput: true,
@@ -327,6 +331,13 @@ export default class TaskEdit extends Component {
     repeatButton.removeEventListener(`click`, this._repeatButtonClickHandler);
     colorsContainer.removeEventListener(`click`, this._colorButtonClickHandler);
     form.removeEventListener(`submit`, this._submitButtonClickHandler);
+
+    if (date) {
+      date.forEach((it) => it.destroy());
+    }
+    if (time) {
+      time.forEach((it) => it.destroy());
+    }
   }
 
   update(data) {

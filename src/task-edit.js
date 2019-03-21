@@ -11,9 +11,6 @@ const COLORS = [
   `pink`
 ];
 
-let date;
-let time;
-
 export default class TaskEdit extends Component {
   constructor({orderNumber, title, dueDate, tags, picture, color, repeatingDays}) {
     super();
@@ -32,6 +29,10 @@ export default class TaskEdit extends Component {
       isFavorite: false,
       isDone: false
     };
+    this._flatPickr = {
+      date: null,
+      time: null
+    };
 
     this._onEdit = null;
     this._onSubmit = null;
@@ -48,7 +49,7 @@ export default class TaskEdit extends Component {
       title: ``,
       color: ``,
       tags: new Set(),
-      dueDate: new Date(),
+      dueDate: this._dueDate,
       repeatingDays: {
         'Mo': false,
         'Tu': false,
@@ -131,15 +132,9 @@ export default class TaskEdit extends Component {
       <form class="card__form" method="get">
         <div class="card__inner">
           <div class="card__control">
-            <button type="button" class="card__btn card__btn--edit">
-              edit
-            </button>
-            <button type="button" class="card__btn card__btn--archive">
-              archive
-            </button>
-            <button type="button" class="card__btn card__btn--favorites">
-              favorites
-            </button>
+            <button type="button" class="card__btn card__btn--edit">edit</button>
+            <button type="button" class="card__btn card__btn--archive">archive</button>
+            <button type="button" class="card__btn card__btn--favorites">favorites</button>
           </div>
 
           <div class="card__color-bar">
@@ -150,11 +145,7 @@ export default class TaskEdit extends Component {
 
           <div class="card__textarea-wrap">
             <label>
-              <textarea
-                class="card__text"
-                placeholder="Start typing your text here..."
-                name="text"
-              >${this._title}</textarea>
+              <textarea class="card__text" placeholder="Start typing your text here..." name="text">${this._title}</textarea>
             </label>
           </div>
 
@@ -170,18 +161,18 @@ export default class TaskEdit extends Component {
                     <input
                       class="card__date"
                       type="text"
-                      placeholder="${moment(this._dueDate).format(`D MMMM`)}"
+                      placeholder="${moment(this._dueDate, `X`).format(`D MMMM`)}"
                       name="date"
-                      value="${moment(this._dueDate).format(`D MMMM`)}"
+                      value="${moment(this._dueDate, `X`).format(`D MMMM`)}"
                     />
                   </label>
                   <label class="card__input-deadline-wrap">
                     <input
                       class="card__time"
                       type="text"
-                      placeholder="${moment(this._dueDate).format(`hh:mm A`)}"
+                      placeholder="${moment(this._dueDate, `X`).format(`hh:mm A`)}"
                       name="time"
-                      value="${moment(this._dueDate).format(`hh:mm A`)}"
+                      value="${moment(this._dueDate, `X`).format(`hh:mm A`)}"
                     />
                   </label>
                 </fieldset>
@@ -201,10 +192,7 @@ export default class TaskEdit extends Component {
                         value="${day}"
                         ${this._repeatingDays[day] ? `checked` : ``}
                       />
-                      <label
-                        class="card__repeat-day"
-                        for="repeat-${day}-${this._orderNumber}"
-                      >
+                      <label class="card__repeat-day" for="repeat-${day}-${this._orderNumber}">
                         ${day}
                       </label>`))).join(``)}
                   </div>
@@ -222,46 +210,28 @@ export default class TaskEdit extends Component {
                 </div>
 
                 <label>
-                  <input
-                    type="text"
-                    class="card__hashtag-input"
-                    name="hashtag-input"
-                    placeholder="Type new hashtag here"
-                  />
+                  <input type="text" class="card__hashtag-input" name="hashtag-input" placeholder="Type new hashtag here" />
                 </label>
               </div>
             </div>
 
             <label class="card__img-wrap">
-              <input
-                type="file"
-                class="card__img-input visually-hidden"
-                name="img"
-              />
-              <img
-                src="${this._picture}"
-                alt="task picture"
-                class="card__img"
-              />
+              <input type="file" class="card__img-input visually-hidden" name="img" />
+              <img src="${this._picture}" alt="task picture" class="card__img"/>
             </label>
 
             <div class="card__colors-inner">
               <h3 class="card__colors-title">Color</h3>
               <div class="card__colors-wrap">
                 ${(COLORS.map((color) => (`
-                  <input
-                    type="radio"
+                  <input type="radio"
                     id="color-${color}-${this._orderNumber}"
                     class="card__color-input card__color-input--${color} visually-hidden"
                     name="color"
                     value="${color}"
                     ${color === this._color ? `checked` : ``}
                   />
-                  <label
-                    for="color-${color}-${this._orderNumber}"
-                    class="card__color card__color--${color}"
-                    >${color}</label
-                  >`))).join(``)}
+                  <label for="color-${color}-${this._orderNumber}" class="card__color card__color--${color}">${color}</label>`))).join(``)}
               </div>
             </div>
           </div>
@@ -297,8 +267,7 @@ export default class TaskEdit extends Component {
     form.addEventListener(`submit`, this._submitButtonClickHandler);
 
     if (this._state.isDate) {
-      // почему при нажатии на кнопку DATE: NO во всех карточках меняется время?
-      date = flatpickr(`.card__date`, {
+      this._flatPickr.date = flatpickr(this._element.querySelector(`.card__date`), {
         altInput: true,
         altFormat: `j F`,
         dateFormat: `j F`,
@@ -308,7 +277,7 @@ export default class TaskEdit extends Component {
         },
       });
 
-      time = flatpickr(`.card__time`, {
+      this._flatPickr.time = flatpickr(this._element.querySelector(`.card__time`), {
         enableTime: true,
         noCalendar: true,
         altInput: true,
@@ -332,11 +301,11 @@ export default class TaskEdit extends Component {
     colorsContainer.removeEventListener(`click`, this._colorButtonClickHandler);
     form.removeEventListener(`submit`, this._submitButtonClickHandler);
 
-    if (date) {
-      date.forEach((it) => it.destroy());
+    if (this._flatPickr.date) {
+      this._flatPickr.date.destroy();
     }
-    if (time) {
-      time.forEach((it) => it.destroy());
+    if (this._flatPickr.time) {
+      this._flatPickr.time.destroy();
     }
   }
 
@@ -360,7 +329,16 @@ export default class TaskEdit extends Component {
       repeat: (value) => {
         target.repeatingDays[value] = true;
       },
-      date: (value) => target.dueDate[value],
+      date: (value) => {
+        const day = moment(value, `D MMMM`).get(`date`);
+        const month = moment(value, `D MMMM`).get(`month`);
+        target.dueDate = moment(target.dueDate).set({'date': day, 'month': month});
+      },
+      time: (value) => {
+        const hours = moment(value, `h:mm A`).get(`hour`);
+        const minutes = moment(value, `h:mm A`).get(`minute`);
+        target.dueDate = Number(moment(target.dueDate).set({'hour': hours, 'minute': minutes}).format(`x`));
+      },
     };
   }
 }

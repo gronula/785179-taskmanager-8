@@ -69,18 +69,18 @@ export default class Task extends Component {
                     <input
                       class="card__date"
                       type="text"
-                      placeholder="${moment(this._dueDate).format(`D MMMM`)}"
+                      placeholder="${moment(this._dueDate, `x`).format(`D MMMM`)}"
                       name="date"
-                      value="${moment(this._dueDate).format(`D MMMM`)}"
+                      value="${moment(this._dueDate, `x`).format(`D MMMM`)}"
                     />
                   </label>
                   <label class="card__input-deadline-wrap">
                     <input
                       class="card__time"
                       type="text"
-                      placeholder="${moment(this._dueDate).format(`hh:mm A`)}"
+                      placeholder="${moment(this._dueDate, `x`).format(`hh:mm A`)}"
                       name="time"
-                      value="${moment(this._dueDate).format(`hh:mm A`)}"
+                      value="${moment(this._dueDate, `x`).format(`hh:mm A`)}"
                     />
                   </label>
                 </fieldset>
@@ -144,5 +144,6 @@ export default class Task extends Component {
     this._tags = data.tags;
     this._color = data.color;
     this._repeatingDays = data.repeatingDays;
+    this._dueDate = data.dueDate;
   }
 }

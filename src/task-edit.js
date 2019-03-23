@@ -294,6 +294,11 @@ export default class TaskEdit extends Component {
         locale: {
           firstDayOfWeek: 1
         },
+        onChange: (selectedDates) => {
+          const day = moment(selectedDates[0], `D MMMM`).get(`date`);
+          const month = moment(selectedDates[0], `D MMMM`).get(`month`);
+          this._dueDate = Number(moment(this._dueDate).set({'date': day, 'month': month}).format(`x`));
+        }
       });
 
       this._flatPickr.time = flatpickr(this._element.querySelector(`.card__time`), {
@@ -303,6 +308,11 @@ export default class TaskEdit extends Component {
         altFormat: `h:i K`,
         dateFormat: `h:i K`,
         defaultDate: moment(this._dueDate).format(`hh:mm A`),
+        onChange: (selectedDates) => {
+          const hours = moment(selectedDates[0], `hh:mm A`).get(`hour`);
+          const minutes = moment(selectedDates[0], `hh:mm A`).get(`minute`);
+          this._dueDate = Number(moment(this._dueDate).set({'hour': hours, 'minute': minutes}).format(`x`));
+        }
       });
     }
   }

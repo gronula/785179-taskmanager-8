@@ -10,12 +10,11 @@ export default class Task extends Component {
     this._picture = picture;
     this._color = color;
     this._repeatingDays = repeatingDays;
-    this._isRepeated = Object.values(this._repeatingDays).some((it) => it === true);
     this._orderNumber = orderNumber;
 
     this._element = null;
     this._state = {
-      isRepeated: Object.values(this._repeatingDays).some((it) => it === true),
+      isRepeated: this._isRepeated(),
       isFavorite: false,
       isDone: false
     };
@@ -24,25 +23,23 @@ export default class Task extends Component {
     this._editButtonClickHandler = this._editButtonClickHandler.bind(this);
   }
 
+  _isRepeated() {
+    return Object.values(this._repeatingDays).some((it) => it === true);
+  }
+
   _editButtonClickHandler() {
     return typeof this._onEdit === `function` && this._onEdit();
   }
 
   get template() {
     return `
-    <article class="card  card--${this._color} ${this._state.isRepeated ? `card--repeat` : ``}">
+    <article class="card  card--${this._color} ${this._isRepeated() ? `card--repeat` : ``}">
       <form class="card__form" method="get">
         <div class="card__inner">
           <div class="card__control">
-            <button type="button" class="card__btn card__btn--edit">
-              edit
-            </button>
-            <button type="button" class="card__btn card__btn--archive">
-              archive
-            </button>
-            <button type="button" class="card__btn card__btn--favorites">
-              favorites
-            </button>
+            <button type="button" class="card__btn card__btn--edit">edit</button>
+            <button type="button" class="card__btn card__btn--archive ${this._state.isDone ? `` : `card__btn--disabled`}">archive</button>
+            <button type="button" class="card__btn card__btn--favorites ${this._state.isFavorite ? `` : `card__btn--disabled`}">favorites</button>
           </div>
 
           <div class="card__color-bar">
@@ -145,5 +142,6 @@ export default class Task extends Component {
     this._color = data.color;
     this._repeatingDays = data.repeatingDays;
     this._dueDate = data.dueDate;
+    this._state.isRepeated = data.state.isRepeated;
   }
 }

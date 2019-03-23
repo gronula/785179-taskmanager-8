@@ -25,7 +25,7 @@ export default class TaskEdit extends Component {
     this._element = null;
     this._state = {
       isDate: false,
-      isRepeated: Object.values(this._repeatingDays).some((it) => it === true),
+      isRepeated: this._isRepeated(),
       isFavorite: false,
       isDone: false
     };
@@ -36,12 +36,18 @@ export default class TaskEdit extends Component {
 
     this._onEdit = null;
     this._onSubmit = null;
+    this._onDelete = null;
 
     this._editButtonClickHandler = this._editButtonClickHandler.bind(this);
-    this._submitButtonClickHandler = this._submitButtonClickHandler.bind(this);
     this._dateButtonClickHandler = this._dateButtonClickHandler.bind(this);
     this._repeatButtonClickHandler = this._repeatButtonClickHandler.bind(this);
     this._colorButtonClickHandler = this._colorButtonClickHandler.bind(this);
+    this._submitButtonClickHandler = this._submitButtonClickHandler.bind(this);
+    this._deleteButtonClickHandler = this._deleteButtonClickHandler.bind(this);
+  }
+
+  _isRepeated() {
+    return Object.values(this._repeatingDays).some((it) => it === true);
   }
 
   _processForm(formData) {
@@ -58,6 +64,9 @@ export default class TaskEdit extends Component {
         'Fr': false,
         'Sa': false,
         'Su': false,
+      },
+      state: {
+        isRepeated: false
       }
     };
 
@@ -85,19 +94,6 @@ export default class TaskEdit extends Component {
     this.update(newData);
   }
 
-  _submitButtonClickHandler(evt) {
-    evt.preventDefault();
-
-    const formData = new FormData(this._element.querySelector(`.card__form`));
-    const newData = this._processForm(formData);
-
-    if (typeof this._onSubmit === `function`) {
-      this._onSubmit(newData);
-    }
-
-    this.update(newData);
-  }
-
   _dateButtonClickHandler() {
     this._state.isDate = !this._state.isDate;
     this.removeListeners();
@@ -120,6 +116,25 @@ export default class TaskEdit extends Component {
     }
   }
 
+  _submitButtonClickHandler(evt) {
+    evt.preventDefault();
+
+    const formData = new FormData(this._element.querySelector(`.card__form`));
+    const newData = this._processForm(formData);
+
+    if (typeof this._onSubmit === `function`) {
+      this._onSubmit(newData);
+    }
+
+    this.update(newData);
+  }
+
+  _deleteButtonClickHandler(evt) {
+    evt.preventDefault();
+
+
+  }
+
   _partialUpdate() {
     const newElement = createElement(this.template);
     this._element.parentElement.replaceChild(newElement, this._element);
@@ -133,8 +148,8 @@ export default class TaskEdit extends Component {
         <div class="card__inner">
           <div class="card__control">
             <button type="button" class="card__btn card__btn--edit">edit</button>
-            <button type="button" class="card__btn card__btn--archive">archive</button>
-            <button type="button" class="card__btn card__btn--favorites">favorites</button>
+            <button type="button" class="card__btn card__btn--archive ${this._state.isDone ? `` : `card__btn--disabled`}">archive</button>
+            <button type="button" class="card__btn card__btn--favorites ${this._state.isFavorite ? `` : `card__btn--disabled`}">favorites</button>
           </div>
 
           <div class="card__color-bar">
@@ -253,6 +268,10 @@ export default class TaskEdit extends Component {
     this._onSubmit = fn;
   }
 
+  set onDelete(fn) {
+    this._onDelete = fn;
+  }
+
   createListeners() {
     const editButton = this._element.querySelector(`.card__btn--edit`);
     const dateButton = this._element.querySelector(`.card__date-deadline-toggle`);
@@ -315,6 +334,7 @@ export default class TaskEdit extends Component {
     this._color = data.color;
     this._repeatingDays = data.repeatingDays;
     this._dueDate = data.dueDate;
+    this._state.isRepeated = data.state.isRepeated;
   }
 
   static createMapper(target) {
@@ -328,6 +348,7 @@ export default class TaskEdit extends Component {
       },
       repeat: (value) => {
         target.repeatingDays[value] = true;
+        target.state.isRepeated = true;
       },
       date: (value) => {
         const day = moment(value, `D MMMM`).get(`date`);

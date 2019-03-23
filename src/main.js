@@ -50,6 +50,11 @@ const renderTaskCards = (cardsNumber) => {
     const card = taskComponent.render();
 
     taskComponent.onEdit = () => {
+      const editedTask = boardTasks.querySelector(`.card--edit`);
+      if (editedTask) {
+        return;
+      }
+
       editTaskComponent.render();
       boardTasks.replaceChild(editTaskComponent.element, taskComponent.element);
       taskComponent.unrender();
@@ -61,6 +66,9 @@ const renderTaskCards = (cardsNumber) => {
       data.color = newObject.color;
       data.repeatingDays = newObject.repeatingDays;
       data.dueDate = newObject.dueDate;
+      data.state = {
+        isRepeated: newObject.state.isRepeated
+      };
 
       taskComponent.update(data);
       taskComponent.render();

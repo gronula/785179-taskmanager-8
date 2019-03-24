@@ -14,21 +14,29 @@ export default class Task extends Component {
 
     this._element = null;
     this._state = {
+      isDate: false,
       isRepeated: this._isRepeated(),
       isFavorite: false,
       isDone: false
     };
 
     this._onEdit = null;
+    this._onTextareaClick = null;
+
     this._editButtonClickHandler = this._editButtonClickHandler.bind(this);
+    this._textareaClickHandler = this._textareaClickHandler.bind(this);
   }
 
   _isRepeated() {
     return Object.values(this._repeatingDays).some((it) => it === true);
   }
 
-  _editButtonClickHandler() {
-    return typeof this._onEdit === `function` && this._onEdit();
+  _editButtonClickHandler(evt) {
+    return typeof this._onEdit === `function` && this._onEdit(evt);
+  }
+
+  _textareaClickHandler(evt) {
+    return typeof this._onTextareaClick === `function` && this._onTextareaClick(evt);
   }
 
   get template() {
@@ -60,7 +68,7 @@ export default class Task extends Component {
 
           <div class="card__settings">
             <div class="card__details">
-              <div class="card__dates">
+              <div class="card__dates">${this._state.isDate ? `
                 <fieldset class="card__date-deadline">
                   <label class="card__input-deadline-wrap">
                     <input
@@ -80,7 +88,7 @@ export default class Task extends Component {
                       value="${moment(this._dueDate, `x`).format(`hh:mm A`)}"
                     />
                   </label>
-                </fieldset>
+                </fieldset>` : ``}
               </div>
 
               <div class="card__hashtag">
@@ -126,14 +134,24 @@ export default class Task extends Component {
     this._onEdit = fn;
   }
 
+  set onTextareaClick(fn) {
+    this._onTextareaClick = fn;
+  }
+
   createListeners() {
     const editButton = this._element.querySelector(`.card__btn--edit`);
+    const textarea = this._element.querySelector(`.card__text`);
+
     editButton.addEventListener(`click`, this._editButtonClickHandler);
+    textarea.addEventListener(`click`, this._textareaClickHandler);
   }
 
   removeListeners() {
     const editButton = this._element.querySelector(`.card__btn--edit`);
+    const textarea = this._element.querySelector(`.card__text`);
+
     editButton.removeEventListener(`click`, this._editButtonClickHandler);
+    textarea.removeEventListener(`click`, this._textareaClickHandler);
   }
 
   update(data) {
@@ -142,6 +160,7 @@ export default class Task extends Component {
     this._color = data.color;
     this._repeatingDays = data.repeatingDays;
     this._dueDate = data.dueDate;
+    this._state.isDate = data.state.isDate;
     this._state.isRepeated = data.state.isRepeated;
   }
 }

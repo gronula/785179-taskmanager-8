@@ -34,16 +34,22 @@ export default class TaskEdit extends Component {
       time: null
     };
 
+    this._onThisClick = null;
     this._onEdit = null;
     this._onSubmit = null;
     this._onDelete = null;
+    this._onEscPress = null;
+    this._onDocumentClick = null;
 
+    this._editedTaskClickHandler = this._editedTaskClickHandler.bind(this);
     this._editButtonClickHandler = this._editButtonClickHandler.bind(this);
     this._dateButtonClickHandler = this._dateButtonClickHandler.bind(this);
     this._repeatButtonClickHandler = this._repeatButtonClickHandler.bind(this);
     this._colorButtonClickHandler = this._colorButtonClickHandler.bind(this);
     this._submitButtonClickHandler = this._submitButtonClickHandler.bind(this);
     this._deleteButtonClickHandler = this._deleteButtonClickHandler.bind(this);
+    this._documentEscPressHandler = this._documentEscPressHandler.bind(this);
+    this._documentClickHandler = this._documentClickHandler.bind(this);
   }
 
   _isRepeated() {
@@ -66,6 +72,7 @@ export default class TaskEdit extends Component {
         'Su': false,
       },
       state: {
+        isDate: false,
         isRepeated: false
       }
     };
@@ -83,11 +90,17 @@ export default class TaskEdit extends Component {
     return entry;
   }
 
+  _editedTaskClickHandler(evt) {
+    if (typeof this._onThisClick === `function`) {
+      this._onThisClick(evt);
+    }
+  }
+
   _editButtonClickHandler() {
     const formData = new FormData(this._element.querySelector(`.card__form`));
     const newData = this._processForm(formData);
 
-    if (typeof this._onSubmit === `function`) {
+    if (typeof this._onEdit === `function`) {
       this._onEdit(newData);
     }
 
@@ -132,7 +145,31 @@ export default class TaskEdit extends Component {
   _deleteButtonClickHandler(evt) {
     evt.preventDefault();
 
+    if (typeof this._onDelete === `function`) {
+      this._onDelete();
+    }
+  }
 
+  _documentEscPressHandler(evt) {
+    const formData = new FormData(this._element.querySelector(`.card__form`));
+    const newData = this._processForm(formData);
+
+    if (typeof this._onEscPress === `function`) {
+      this._onEscPress(evt, newData);
+    }
+
+    this.update(newData);
+  }
+
+  _documentClickHandler(evt) {
+    const formData = new FormData(this._element.querySelector(`.card__form`));
+    const newData = this._processForm(formData);
+
+    if (typeof this._onDocumentClick === `function`) {
+      this._onDocumentClick(evt, newData);
+    }
+
+    this.update(newData);
   }
 
   _partialUpdate() {
@@ -260,6 +297,10 @@ export default class TaskEdit extends Component {
     </article>`;
   }
 
+  set onThisClick(fn) {
+    this._onThisClick = fn;
+  }
+
   set onEdit(fn) {
     this._onEdit = fn;
   }
@@ -272,18 +313,31 @@ export default class TaskEdit extends Component {
     this._onDelete = fn;
   }
 
+  set onEscPress(fn) {
+    this._onEscPress = fn;
+  }
+
+  set onDocumentClick(fn) {
+    this._onDocumentClick = fn;
+  }
+
   createListeners() {
     const editButton = this._element.querySelector(`.card__btn--edit`);
     const dateButton = this._element.querySelector(`.card__date-deadline-toggle`);
     const repeatButton = this._element.querySelector(`.card__repeat-toggle`);
     const colorsContainer = this._element.querySelector(`.card__colors-wrap`);
+    const deleteButton = this._element.querySelector(`.card__delete`);
     const form = this._element.querySelector(`.card__form`);
 
+    this._element.addEventListener(`click`, this._editedTaskClickHandler);
     editButton.addEventListener(`click`, this._editButtonClickHandler);
     dateButton.addEventListener(`click`, this._dateButtonClickHandler);
     repeatButton.addEventListener(`click`, this._repeatButtonClickHandler);
     colorsContainer.addEventListener(`click`, this._colorButtonClickHandler);
+    deleteButton.addEventListener(`click`, this._deleteButtonClickHandler);
     form.addEventListener(`submit`, this._submitButtonClickHandler);
+    document.addEventListener(`keydown`, this._documentEscPressHandler);
+    document.addEventListener(`click`, this._documentClickHandler);
 
     if (this._state.isDate) {
       this._flatPickr.date = flatpickr(this._element.querySelector(`.card__date`), {
@@ -322,13 +376,18 @@ export default class TaskEdit extends Component {
     const dateButton = this._element.querySelector(`.card__date-deadline-toggle`);
     const repeatButton = this._element.querySelector(`.card__repeat-toggle`);
     const colorsContainer = this._element.querySelector(`.card__colors-wrap`);
+    const deleteButton = this._element.querySelector(`.card__delete`);
     const form = this._element.querySelector(`.card__form`);
 
+    this._element.addEventListener(`click`, this._editedTaskClickHandler);
     editButton.removeEventListener(`click`, this._editButtonClickHandler);
     dateButton.removeEventListener(`click`, this._dateButtonClickHandler);
     repeatButton.removeEventListener(`click`, this._repeatButtonClickHandler);
     colorsContainer.removeEventListener(`click`, this._colorButtonClickHandler);
+    deleteButton.removeEventListener(`click`, this._deleteButtonClickHandler);
     form.removeEventListener(`submit`, this._submitButtonClickHandler);
+    document.removeEventListener(`keydown`, this._documentEscPressHandler);
+    document.removeEventListener(`click`, this._documentClickHandler);
 
     if (this._flatPickr.date) {
       this._flatPickr.date.destroy();
@@ -344,12 +403,13 @@ export default class TaskEdit extends Component {
     this._color = data.color;
     this._repeatingDays = data.repeatingDays;
     this._dueDate = data.dueDate;
+    this._state.isDate = data.state.isDate;
     this._state.isRepeated = data.state.isRepeated;
   }
 
   static createMapper(target) {
     return {
-      hastag: (value) => target.tags.add(value),
+      hashtag: (value) => target.tags.add(value),
       text: (value) => {
         target.title = value;
       },
@@ -364,11 +424,13 @@ export default class TaskEdit extends Component {
         const day = moment(value, `D MMMM`).get(`date`);
         const month = moment(value, `D MMMM`).get(`month`);
         target.dueDate = moment(target.dueDate).set({'date': day, 'month': month});
+        target.state.isDate = true;
       },
       time: (value) => {
         const hours = moment(value, `h:mm A`).get(`hour`);
         const minutes = moment(value, `h:mm A`).get(`minute`);
         target.dueDate = Number(moment(target.dueDate).set({'hour': hours, 'minute': minutes}).format(`x`));
+        target.state.isDate = true;
       },
     };
   }

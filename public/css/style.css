@@ -303,6 +303,7 @@ body {
 }
 .card__settings {
   display: flex;
+  justify-content: space-between;
   margin-top: auto;
 }
 .card__details {

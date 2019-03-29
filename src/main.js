@@ -1,40 +1,57 @@
-import getFilterElementMarkup from './make-filter';
+import getFilterData from './filter-data';
+import Filter from './filter';
 import getTaskCardData from './task-data';
 import Task from './task';
 import TaskEdit from './task-edit';
+import moment from 'moment';
 
-const FILTER_ELEMENT_NAMES = [
-  `ALL`,
-  `OVERDUE`,
-  `TODAY`,
-  `FAVORITES`,
-  `Repeating`,
-  `Tags`,
-  `ARCHIVE`
-];
-
+const FILTERS_NUMBER = 7;
 const CARDS_NUMBER = 7;
 
-const filter = document.querySelector(`.filter`);
+const filtersContainer = document.querySelector(`.filter`);
 const boardTasks = document.querySelector(`.board__tasks`);
 
-const getRandomInteger = (min, max) => Math.floor(min + Math.random() * (max + 1 - min));
-const getRandomBoolean = () => Math.floor(Math.random() * 2) === 1 ? true : false;
+const getAncestor = (target, className) => {
+  let element = target;
 
-const renderFilterElements = () => {
-  let markup = ``;
+  while (!element.classList.contains(className)) {
+    element = element.parentElement;
 
-  for (let i = 0; i < FILTER_ELEMENT_NAMES.length; i++) {
-    const parameters = {};
-    parameters.name = FILTER_ELEMENT_NAMES[i];
-    parameters.randomAmount = getRandomInteger(0, 100);
-    parameters.randomChecked = getRandomBoolean();
-    parameters.randomDisabled = getRandomBoolean();
-
-    markup += getFilterElementMarkup(parameters);
+    if (!element) {
+      return false;
+    }
   }
 
-  filter.innerHTML = markup;
+  return true;
+};
+
+const renderFilterElements = (filters) => {
+  filtersContainer.innerHTML = ``;
+  const fragment = document.createDocumentFragment();
+
+  for (const filter of filters) {
+    const filterComponent = new Filter(filter);
+    const filterElement = filterComponent.render();
+
+    const filterTasks = (tasks, filterName) => {
+      switch (filterName) {
+        case `all`: return tasks;
+        case `overdue`: return tasks.filter((it) => it.dueDate < Date.now());
+        case `today`: return tasks.filter((it) => moment(it.dueDate).format(`D MMMM`) === moment().format(`D MMMM`));
+        case `repeating`: return tasks.filter((it) => [...Object.entries(it.repeatingDays)].some((rec) => rec[1]));
+
+        default: return tasks;
+      }
+    };
+    filterComponent.onFilter = (name) => {
+      const filteredTasks = filterTasks(initialTasks, name.toLowerCase());
+      renderTaskCards(filteredTasks);
+    };
+
+    [...filterElement.children].forEach((it) => fragment.appendChild(it));
+  }
+
+  filtersContainer.appendChild(fragment);
 };
 
 const renderTaskCards = (tasks) => {
@@ -46,25 +63,14 @@ const renderTaskCards = (tasks) => {
     const editTaskComponent = new TaskEdit(task);
     const card = taskComponent.render();
 
-    taskComponent.onEdit = (evt) => {
-      const editedTask = boardTasks.querySelector(`.card--edit`);
-
-      if (!editedTask) {
-        evt.stopPropagation();
-      }
-
+    taskComponent.onEdit = () => {
       editTaskComponent.render();
       boardTasks.replaceChild(editTaskComponent.element, taskComponent.element);
       taskComponent.unrender();
     };
 
     taskComponent.onTextareaClick = (evt) => {
-      const editedTask = boardTasks.querySelector(`.card--edit`);
       const textareaCursorPosition = evt.target.selectionStart;
-
-      if (!editedTask) {
-        evt.stopPropagation();
-      }
 
       editTaskComponent.render();
       boardTasks.replaceChild(editTaskComponent.element, taskComponent.element);
@@ -84,9 +90,6 @@ const renderTaskCards = (tasks) => {
       editTaskComponent.unrender();
     };
 
-    editTaskComponent.onThisClick = (evt) => {
-      evt.stopPropagation();
-    };
     editTaskComponent.onEdit = updateComponent;
     editTaskComponent.onSubmit = updateComponent;
     editTaskComponent.onEscPress = (evt, newObject) => {
@@ -96,14 +99,17 @@ const renderTaskCards = (tasks) => {
       }
     };
     editTaskComponent.onDocumentClick = (evt, newObject) => {
-      // как сделать, чтобы при смене месяца или времени не срабатывал этот обработчик?
-      // как сделать, чтобы при открытой карточке, при клике на другую в поле textarea, она сразу открывалась? Сейчас обе карточке оказываются закрытыми после клика.
-      evt.preventDefault();
+      const isOnEditTaskClick = getAncestor(evt.target, `card--edit`);
+
+      if (isOnEditTaskClick) {
+        return;
+      }
+
       updateComponent(newObject);
     };
     editTaskComponent.onDelete = () => {
-      const index = tasks.findIndex((it) => it === task);
-      tasks.splice(index, 1);
+      const index = initialTasks.findIndex((it) => it === task);
+      initialTasks.splice(index, 1);
       editTaskComponent.unrender();
     };
 
@@ -113,23 +119,8 @@ const renderTaskCards = (tasks) => {
   boardTasks.appendChild(fragment);
 };
 
+const filters = new Array(FILTERS_NUMBER).fill().map((it, i) => getFilterData(i));
 const initialTasks = new Array(CARDS_NUMBER).fill().map((it, i) => getTaskCardData(i + 1));
 
-renderFilterElements();
+renderFilterElements(filters);
 renderTaskCards(initialTasks);
-
-const filterLabels = filter.querySelectorAll(`.filter__label`);
-
-const filterLabelClickHandler = () => {
-  const editedTask = boardTasks.querySelector(`.card--edit`);
-  if (editedTask) {
-    return;
-  }
-
-  const randomCardsNumber = getRandomInteger(1, 7);
-  const newTasks = new Array(randomCardsNumber).fill().map((it, i) => getTaskCardData(i + 1));
-
-  renderTaskCards(newTasks);
-};
-
-filterLabels.forEach((it) => it.addEventListener(`click`, filterLabelClickHandler));

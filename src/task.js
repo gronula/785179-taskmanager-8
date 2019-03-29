@@ -4,17 +4,17 @@ import moment from 'moment';
 export default class Task extends Component {
   constructor({orderNumber, title, dueDate, tags, picture, color, repeatingDays}) {
     super();
+    this._orderNumber = orderNumber;
     this._title = title;
     this._dueDate = dueDate;
     this._tags = tags;
     this._picture = picture;
     this._color = color;
     this._repeatingDays = repeatingDays;
-    this._orderNumber = orderNumber;
 
     this._element = null;
     this._state = {
-      isDate: false,
+      isDate: this._dueDate < Date.now(),
       isRepeated: this._isRepeated(),
       isFavorite: false,
       isDone: false

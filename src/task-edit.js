@@ -24,7 +24,7 @@ export default class TaskEdit extends Component {
 
     this._element = null;
     this._state = {
-      isDate: false,
+      isDate: this._dueDate < Date.now(),
       isRepeated: this._isRepeated(),
       isFavorite: false,
       isDone: false
@@ -41,7 +41,6 @@ export default class TaskEdit extends Component {
     this._onEscPress = null;
     this._onDocumentClick = null;
 
-    this._editedTaskClickHandler = this._editedTaskClickHandler.bind(this);
     this._editButtonClickHandler = this._editButtonClickHandler.bind(this);
     this._dateButtonClickHandler = this._dateButtonClickHandler.bind(this);
     this._repeatButtonClickHandler = this._repeatButtonClickHandler.bind(this);
@@ -88,12 +87,6 @@ export default class TaskEdit extends Component {
     }
 
     return entry;
-  }
-
-  _editedTaskClickHandler(evt) {
-    if (typeof this._onThisClick === `function`) {
-      this._onThisClick(evt);
-    }
   }
 
   _editButtonClickHandler() {
@@ -297,10 +290,6 @@ export default class TaskEdit extends Component {
     </article>`;
   }
 
-  set onThisClick(fn) {
-    this._onThisClick = fn;
-  }
-
   set onEdit(fn) {
     this._onEdit = fn;
   }
@@ -329,15 +318,14 @@ export default class TaskEdit extends Component {
     const deleteButton = this._element.querySelector(`.card__delete`);
     const form = this._element.querySelector(`.card__form`);
 
-    this._element.addEventListener(`click`, this._editedTaskClickHandler);
     editButton.addEventListener(`click`, this._editButtonClickHandler);
     dateButton.addEventListener(`click`, this._dateButtonClickHandler);
     repeatButton.addEventListener(`click`, this._repeatButtonClickHandler);
     colorsContainer.addEventListener(`click`, this._colorButtonClickHandler);
     deleteButton.addEventListener(`click`, this._deleteButtonClickHandler);
     form.addEventListener(`submit`, this._submitButtonClickHandler);
-    document.addEventListener(`keydown`, this._documentEscPressHandler);
-    document.addEventListener(`click`, this._documentClickHandler);
+    document.body.addEventListener(`keydown`, this._documentEscPressHandler);
+    document.body.addEventListener(`click`, this._documentClickHandler, true);
 
     if (this._state.isDate) {
       this._flatPickr.date = flatpickr(this._element.querySelector(`.card__date`), {
@@ -345,6 +333,7 @@ export default class TaskEdit extends Component {
         altFormat: `j F`,
         dateFormat: `j F`,
         defaultDate: moment(this._dueDate).format(`D MMMM`),
+        static: true,
         locale: {
           firstDayOfWeek: 1
         },
@@ -362,6 +351,7 @@ export default class TaskEdit extends Component {
         altFormat: `h:i K`,
         dateFormat: `h:i K`,
         defaultDate: moment(this._dueDate).format(`hh:mm A`),
+        static: true,
         onChange: (selectedDates) => {
           const hours = moment(selectedDates[0], `hh:mm A`).get(`hour`);
           const minutes = moment(selectedDates[0], `hh:mm A`).get(`minute`);
@@ -379,15 +369,14 @@ export default class TaskEdit extends Component {
     const deleteButton = this._element.querySelector(`.card__delete`);
     const form = this._element.querySelector(`.card__form`);
 
-    this._element.addEventListener(`click`, this._editedTaskClickHandler);
     editButton.removeEventListener(`click`, this._editButtonClickHandler);
     dateButton.removeEventListener(`click`, this._dateButtonClickHandler);
     repeatButton.removeEventListener(`click`, this._repeatButtonClickHandler);
     colorsContainer.removeEventListener(`click`, this._colorButtonClickHandler);
     deleteButton.removeEventListener(`click`, this._deleteButtonClickHandler);
     form.removeEventListener(`submit`, this._submitButtonClickHandler);
-    document.removeEventListener(`keydown`, this._documentEscPressHandler);
-    document.removeEventListener(`click`, this._documentClickHandler);
+    document.body.removeEventListener(`keydown`, this._documentEscPressHandler);
+    document.body.removeEventListener(`click`, this._documentClickHandler, true);
 
     if (this._flatPickr.date) {
       this._flatPickr.date.destroy();
